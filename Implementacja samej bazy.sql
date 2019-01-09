@@ -7,6 +7,10 @@ create table Conference(
 	Addres varchar(50)
 )
 
+alter table Conference
+with check add constraint Conference_dates
+check (([StartDate] <= [EndDate]))
+
 --conferenceDay
 create table ConferenceDay(
 	ConferenceDayID int primary key,
@@ -17,6 +21,10 @@ create table ConferenceDay(
 alter table ConferenceDay
 add constraint FK_ConferenceDay_TO_Conference
 foreign key (ConferenceID) references Conference(ConferenceID)
+
+alter table ConferenceDay
+with check add constraint ConferenceDay_DayNumber
+check (([DayNumber] >= 0))
 
 --ConferenceDayReservation
 
@@ -32,6 +40,10 @@ alter table ConferenceDayReservation
 add constraint FK_ConferenceDayReservation_TO_ConferenceDay
 foreign key (ConferenceDayID) references ConferenceDay(ConferenceDayID)
 
+alter table ConferenceDayReservation
+with check add constraint ConferenceDay_DayNumber
+check (([Price] >= 0))
+
 --Customer
 
 create table Customer(
@@ -46,6 +58,10 @@ alter table Customer
 add constraint FK_Customer_TO_ConferenceDayReservation
 foreign key (ConferenceDayReservationID) references ConferenceDayReservation(ConferenceDayReservationID)
 
+use Siwik
+alter table [dbo].[Customer]
+with check add constraint Email_like
+check (([Email] like  '%@%')) 
 
 --Company
 
@@ -92,7 +108,7 @@ create table WorkShopReservation(
 use Siwik
 alter table WorkShopReservation
 add constraint CK_DiscountValue 
-check ([Discount] >=0 and [Discount] <= 99)
+check ([Discount] >=0 and [Discount] <= 1)
 
 use Siwik
 alter table WorkShopReservation
@@ -189,7 +205,3 @@ use Siwik
 alter table IndividualClient
 add constraint FK_IndividualClient_TO_ConferenceParticipant
 foreign key (ConferenceParticipantID) references ConferenceParticipant(ConferenceParticipantID)
-
-
-
-
