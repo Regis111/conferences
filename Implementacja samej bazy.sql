@@ -18,29 +18,30 @@ drop table Conference
 
 use Conferences
 --Conference
-create table Conference(
+create table Conferences(
 	ConferenceID int identity(1,1) primary key,
 	StartDate date,
 	EndDate date,
-	Addres varchar(50)
-)
+	City varchar(50),
+	Street varchar(50)
+) 
 
-alter table Conference
+alter table Conferences
 with check add constraint Conference_dates
 check (([StartDate] <= [EndDate]))
 
 --ConferenceDay
-create table ConferenceDay(
+create table ConferenceDays(
 	ConferenceDayID int identity(1,1) primary key,
 	ConferenceID int,
 	DayNumber int
 )
 
-alter table ConferenceDay
+alter table ConferenceDays
 add constraint FK_ConferenceDay_TO_Conference
-foreign key (ConferenceID) references Conference(ConferenceID) on delete cascade
+foreign key (ConferenceID) references Conferences(ConferenceID) on delete cascade
 
-alter table ConferenceDay
+alter table ConferenceDays
 with check add constraint ConferenceDay_DayNumber
 check (([DayNumber] >= 0))
 
@@ -51,16 +52,34 @@ create table ConferenceDayReservation(
 	Price int,
 	SeatsBooked int,
 	Discount decimal(10,2),
-	ConferenceDayID int
+	ConferenceDayID int,
+	SeatsLimit int
 )
 
 alter table ConferenceDayReservation
 add constraint FK_ConferenceDayReservation_TO_ConferenceDay
-foreign key (ConferenceDayID) references ConferenceDay(ConferenceDayID) on delete cascade
+foreign key (ConferenceDayID) references ConferenceDays(ConferenceDayID) on delete cascade
 
 alter table ConferenceDayReservation
 with check add constraint ConferenceDayReservation_Price
 check (([Price] >= 0))
+
+--Reservations
+
+create table Reservations(
+	ReservationID int identity(1,1) primary key,
+	RequiredPaymentDate date,
+	ConferenceDayReservationID int,
+	ConferenceID int
+)
+
+alter table Reservations
+add constraint FK_Reservations_TO_Conferences
+foreign key (ConferenceID) references Conferences(ConferenceID) on delete cascade
+
+alter table Reservations
+add constraint FK_Reservations_TO_ConferenceDayReservations
+foreign key (ConferenceDayReservationID) references ConferenceDayReservation(ConferenceDayReservationID)
 
 --Customer
 
@@ -69,12 +88,12 @@ create table Customer(
 	Email char(255),
 	Street char(255),
 	PostalCode char(255),
-	ConferenceDayReservationID int
+	ReservationID int
 )
 
 alter table Customer
-add constraint FK_Customer_TO_ConferenceDayReservation
-foreign key (ConferenceDayReservationID) references ConferenceDayReservation(ConferenceDayReservationID) on delete cascade
+add constraint FK_Customer_TO_Reservations
+foreign key (ReservationID) references Reservations(ReservationID) on delete cascade
 
 use Conferences
 alter table [dbo].[Customer]
@@ -83,7 +102,6 @@ check (([Email] like  '%@%'))
 
 --Company
 
-use Conferences
 create table Company(
 	CompanyID int identity(1,1) primary key,
 	Company char(255) unique ,
@@ -91,7 +109,6 @@ create table Company(
 	CustomerID int
 )
 
-use Conferences
 alter table Company
 add constraint FK_Company_TO_Customer
 foreign key (CustomerID) references Customer(CustomerID) on delete cascade
@@ -103,15 +120,8 @@ create table ConferenceParticipant(
 	ConferenceParticipantID int identity(1,1) primary key,
 	First_Name char(30),
 	Last_Name char(30),
-	PhoneNumber int unique,
-	IsStudent bit,
-	ConferenceDayReservationID int unique 
+	PhoneNumber char(30) unique,
 )
-
-use Conferences
-alter table ConferenceParticipant
-add constraint FK_TO_ConferenceDayReservation
-foreign key (ConferenceDayReservationID) references ConferenceDayReservation(ConferenceDayReservationID) on delete cascade
 
 --WorkShop
 
@@ -128,8 +138,8 @@ create table WorkShop(
 
 use Conferences
 alter table WorkShop
-add constraint FK_WorkShop_TO_ConferenceDay
-foreign key (ConferenceDayID) references ConferenceDay(ConferenceDayID) on delete cascade
+add constraint FK_WorkShop_TO_ConferenceDays
+foreign key (ConferenceDayID) references ConferenceDays(ConferenceDayID) on delete cascade
 
 --WorkShopReservation
 
@@ -138,7 +148,7 @@ create table WorkShopReservation(
 	WorkShopReservationID int identity(1,1) primary key,
 	WebPage char(255),
 	Discount int,
-	WorkShopID int unique
+	WorkShopID int
 )
 
 use Conferences
@@ -175,7 +185,7 @@ foreign key (ConferenceParticipantID) references ConferenceParticipant(Conferenc
 use Conferences
 create table ConferenceDayParticipant(
 	ConferenceParticipantID int,
-	ConferenceDayID int
+	ConferenceDayReservationID int
 )
 
 use Conferences
@@ -185,8 +195,8 @@ foreign key (ConferenceParticipantID) references ConferenceParticipant(Conferenc
 
 use Conferences
 alter table ConferenceDayParticipant
-add constraint FK_ConferenceDayParticipant_TO_ConferenceDay
-foreign key (ConferenceDayID) references ConferenceDay(ConferenceDayID) on delete no action
+add constraint FK_ConferenceDayParticipant_TO_ConferenceDayReservation
+foreign key (ConferenceDayReservationID) references ConferenceDayReservation(ConferenceDayReservationID) on delete no action
 
 --WorkShopParticipant
 
