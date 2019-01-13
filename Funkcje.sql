@@ -1,6 +1,6 @@
 --Funkcje
 
---a)
+--a)zarobek za jedn¹ konferencjê z samych warsztatów 
 create function [FUNC_PaymentForWorkShops] (@ConferenceID int)	
 	returns int
 as
@@ -26,7 +26,7 @@ begin
 	)
 end
 
---b)
+--b) zarobek za jedn¹ konferencjê z samych dni konferencji 
 
 create function [FUNC_PaymentForDays] (@ConferenceID int)
 	returns int
@@ -54,7 +54,7 @@ begin
 end
 
 
-c)
+--c)  iloœæ wolnych miejsc na konkretny dzieñ (suma wolnych miejsc na wszystkich warsztatach na ten dzieñ)
 
 create function [FUNC_NumberOfAvailableSeatsOnDay] (@DayID int)
 	returns int
@@ -73,5 +73,26 @@ begin
 	)
 end
 
-d)
+--d) 
+create function [FUNC_AreTheseWorkShopsAtTheSameTime] (@WorkShop1ID int, @WorkShop2ID int)
+	returns bit
+as
+begin
+	if not exists (select * from WorkShop where WorkShopID = @WorkShop1ID) or not exists (select * from WorkShop where WorkShopID = @WorkShop2ID)
+	begin;
+		throw 50001,'Wrong parameter - There is no such ConferenceDay in database',1
+	end
+	
+	declare @startTime1 time
+	declare @endTime1 time
+	declare @startTime2 time
+	declare @endTime2 time
+	
+	set @startTime1 = (select StartTime from WorkShop where WorkShopID = @WorkShop1ID)
+	set @endTime1 = (select EndTime from WorkShop where WorkShopID = @WorkShop1ID)
+	set @startTime2 = (select StartTime from WorkShop where WorkShopID = @WorkShop2ID)
+	set @endTime2 = (select EndTime from WorkShop where WorkShopID = @WorkShop2ID)
+	
+	
 
+end

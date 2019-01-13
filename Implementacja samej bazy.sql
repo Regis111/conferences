@@ -135,11 +135,10 @@ create table WorkShop(
 	WorkShopName char(255),
 	ReservedSeats int,
 	SeatsLimit int,
-	StartTime time,
-	EndTime time,
+	StartTime datetime,
+	EndTime datetime,
 	ConferenceDayID int
 )
-
 use Conferences
 alter table WorkShop
 add constraint FK_WorkShop_TO_ConferenceDays
