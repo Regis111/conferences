@@ -1,16 +1,16 @@
 # BazaSiwika
 
-FUNKCJE
+## FUNKCJE
 
 a) zarobek za jedną konferencję z samych warsztatów -> zrobione
 
 b)  zarobek za jedną konferencję z samych dni konferencji -> zrobione
 
-c) ilość wolnych miejsc na konkretny warsztat
+c) ilość wolnych miejsc na konkretny dzień (suma wolnych miejsc na wszystkich warsztatach na ten dzień) -> zrobione
 
-d) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie
+d) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie 
 
-WIDOKI
+## WIDOKI
 
 1a) Liczba osób na warsztat wraz z informacją o konferencji i dniu -> zrobione
 
@@ -26,6 +26,8 @@ WIDOKI
 
 -
 
-TRIGERRY
+## TRIGERRY
 
 ...
+
+## PROCEDURY
