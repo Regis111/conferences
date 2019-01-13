@@ -12,13 +12,19 @@ d) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie
 
 WIDOKI
 
-1a) Liczba osób dla każdego warsztatu -> zrobione
+1a) Liczba osób na warsztat wraz z informacją o konferencji i dniu -> zrobione
 
 1b) top 20 najbardziej aktywnych klientów -> zrobione
 
-1c) podaje dni na które pozostały wolne miejsca wraz z liczbą wolnych miejsc na dzień 
+- nieopłacone rezerwacje indywidualne
 
-1d)
+-nieopłacone rezerwacje firmowe
+
+-rezerwacje które powinny być anulowane
+
+-pokazuje rezerwacje na konferencje
+
+-
 
 TRIGERRY
 
