@@ -6,7 +6,7 @@ a) zarobek za jedną konferencję z samych warsztatów -> zrobione
 
 b)  zarobek za jedną konferencję z samych dni konferencji -> zrobione
 
-c) ilość wolnych miejsc na konkretny warsztat
+c) ilość wolnych miejsc na konkretny dzień (suma wolnych miejsc na wszystkich warsztatach na ten dzień)
 
 d) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie
 
