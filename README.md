@@ -2,11 +2,13 @@
 
 FUNKCJE
 
-a) koszt dla jednej rezerwacji nie wliczając daty rezerwacji -> zrobione
+a) zarobek za jedną konferencję z samych warsztatów -> zrobione
 
-b) ilość wolnych miejsc na konkretny warsztat
+b)  zarobek za jedną konferencję z samych dni konferencji -> zrobione
 
-c) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie
+c) ilość wolnych miejsc na konkretny warsztat
+
+d) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie
 
 WIDOKI
 
