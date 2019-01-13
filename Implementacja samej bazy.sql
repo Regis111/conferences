@@ -2,12 +2,12 @@
 --tabele
 
 use Conferences
-drop table Employee
+drop table Employees
 drop table Company
 drop table WorkShopParticipant
 drop table ConferenceDayParticipant
 drop table IndividualClient
-drop table Customer
+drop table Customers
 drop table ConferenceParticipant
 drop table ConferenceDayReservation
 drop table WorkShopReservation
@@ -81,8 +81,7 @@ use Conferences
 create table ConferenceParticipant(
 	ConferenceParticipantID int identity(1,1) primary key,
 	First_Name char(30),
-	Last_Name char(30),
-	Email char(30)
+	Last_Name char(30)
 )
 
 --Reservations
@@ -90,9 +89,13 @@ create table ConferenceParticipant(
 create table Reservations(
 	ReservationID int identity(1,1) primary key,
 	RequiredPaymentDate date,
+	ReservationDate date,
 	CustomerID int,
 	ConferenceID int
 )
+
+alter table Reservations
+add PaymentDate date
 
 alter table Reservations
 add constraint FK_Reservations_TO_Conferences
@@ -106,10 +109,8 @@ foreign key (CustomerID) references Customers(CustomerID)
 
 create table ConferenceDayReservation(
 	ConferenceDayReservationID int identity(1,1) primary key,
-	Price decimal(10,2),
-	SeatsBooked int,
-	SeatsLimit int,
-	Discount float,
+	NormalTicket decimal(10,2),
+	StudentTicket decimal(10,2),
 	ConferenceDayID int,
 	ReservationID int
 )
@@ -124,7 +125,7 @@ foreign key (ReservationID) references Reservations(ReservationID)
 
 alter table ConferenceDayReservation
 with check add constraint ConferenceDayReservation_Price
-check (([Price] >= 0))
+check (([NormalTicket] >= 0 and [StudentTicket] >= 0))
 
 --WorkShop
 
@@ -139,9 +140,6 @@ create table WorkShop(
 	ConferenceDayID int
 )
 
-alter table WorkShop
-add NumberOfStudents int
-
 use Conferences
 alter table WorkShop
 add constraint FK_WorkShop_TO_ConferenceDays
@@ -153,17 +151,10 @@ use Conferences
 create table WorkShopReservation(
 	WorkShopReservationID int identity(1,1) primary key,
 	WebPage char(255),
-	Discount int,
+	NormalTicket decimal(10,2),
+	StudentTicket decimal(10,2),
 	WorkShopID int
 )
-
-alter table WorkShopReservation
-add Price decimal(10,2)
-
-use Conferences
-alter table WorkShopReservation
-add constraint CK_DiscountValue 
-check ([Discount] >=0 and [Discount] <= 1)
 
 use Conferences
 alter table WorkShopReservation
