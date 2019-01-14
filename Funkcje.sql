@@ -1,6 +1,7 @@
 --Funkcje
 
---a)zarobek za jedn¹ konferencjê z samych warsztatów 
+--a)zarobek za jedn¹ konferencjê z samych warsztatów
+ 
 create function [FUNC_PaymentForWorkShops] (@ConferenceID int)	
 	returns int
 as
@@ -73,7 +74,8 @@ begin
 	)
 end
 
---d) 
+--d) czy dwa warsztaty s¹ w tym samym czasie 
+
 create function [FUNC_AreTheseWorkShopsAtTheSameTime] (@WorkShop1ID int, @WorkShop2ID int)
 	returns bit
 as
@@ -83,16 +85,28 @@ begin
 		throw 50001,'Wrong parameter - There is no such ConferenceDay in database',1
 	end
 	
-	declare @startTime1 time
-	declare @endTime1 time
-	declare @startTime2 time
-	declare @endTime2 time
+	declare @start1 datetime = (select StartTime from WorkShop where WorkShopID = @WorkShop1ID)
+	declare @end1 datetime = (select EndTime from WorkShop where WorkShopID = @WorkShop1ID)
+	declare @start2 datetime = (select StartTime from WorkShop where WorkShopID = @WorkShop2ID)
+	declare @end2 datetime = (select EndTime from WorkShop where WorkShopID = @WorkShop2ID)
 	
-	set @startTime1 = (select StartTime from WorkShop where WorkShopID = @WorkShop1ID)
-	set @endTime1 = (select EndTime from WorkShop where WorkShopID = @WorkShop1ID)
-	set @startTime2 = (select StartTime from WorkShop where WorkShopID = @WorkShop2ID)
-	set @endTime2 = (select EndTime from WorkShop where WorkShopID = @WorkShop2ID)
+	if @start1 < @start2 and @start2 < @end1
+		return 1
 	
-	
+	if @start2 < @start1 and @start1 < @end2
+		return 1
 
+	if @start1 <= @start2 and @end1 >= @end2
+		return 1
+
+	if @start2 <= @start1 and @end2 >= @end1
+		return 1
+
+	return 0
 end
+
+--e) iloœæ wolnych miejsc na konkretny warsztat
+
+--f) koszt konkretnej rezerwacji
+
+--g)

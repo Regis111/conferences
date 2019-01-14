@@ -1,4 +1,3 @@
-
 --tabele
 
 use Conferences
@@ -16,7 +15,6 @@ drop table ConferenceDays
 drop table Conferences
 drop table Reservations
 drop table Student
-
 
 use Conferences
 --Conference
