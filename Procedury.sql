@@ -163,8 +163,80 @@ end
 
 --e) dodaje warsztat do dnia konferencji
 
+create procedure [PROC_AddWorkShop]
+	@WorkShopName char(255),
+	@SeatsLimit int,
+	@ConferenceDayID int,
+	@StartTime datetime,
+	@EndTime datetime
+as
+begin
+	begin try
+		if not exists (select * from ConferenceDays where ConferenceDayID = @ConferenceDayID)
+		begin;
+			throw 50005,'No such day => cannot add workshop',1
+		end
+		if exists (select * from WorkShop where ConferenceDayID = @ConferenceDayID and @WorkShopName = WorkShopName)
+		begin;
+			throw 50005,'Already added such WorkShop',1
+		end
+		insert into WorkShop(
+			WorkShopName,
+			ReservedSeats,
+			SeatsLimit,
+			ConferenceDayID,
+			StartTime,
+			EndTime
+		)
+		values(
+			@WorkShopName,
+			0,
+			@SeatsLimit,
+			@ConferenceDayID,
+			@StartTime,
+			@EndTime
+		)
+	end try
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt add this WorkShop: ' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+end
 --f) dodaje klienta firmowego
-
+create procedure [AddCompanyCustomer]
+	@Company char(255),
+	@PhoneNumber int,
+	@Street char(255),
+	@PostalCode char(255)
+as
+begin
+	begin try
+		begin transaction
+			insert into Customers(
+			PhoneNumber,
+			Street,
+			PostalCode
+			)
+			values(
+				@PhoneNumber,
+				@Street,
+				@PostalCode
+			)
+			insert into Company(
+				Company,
+				CustomerID
+			)
+			values(
+				@Company,
+				SCOPE_IDENTITY()
+			)
+		commit transaction
+	end try
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt add this Customer or Company: ' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+end
 --g) dodaje pracownika firmy
 
 --h) dodaje uczestnika do konferencji z konkretnej rezerwacji (wiadomo na jakie dni go dodaæ) + informacja czy jest studentem
@@ -181,10 +253,6 @@ end
 --b) usuwa rezerwacjê jeœli nie op³acona na tydzieñ przed konferencj¹
 
 --c)
-
-
-
-
 
 
 
