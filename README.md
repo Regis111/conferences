@@ -12,13 +12,13 @@ d) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie
 
 ## WIDOKI
 
-1a) Liczba osób na warsztat wraz z informacją o konferencji i dniu -> zrobione
+a) Liczba osób na warsztat wraz z informacją o konferencji i dniu -> zrobione
 
-1b) top 20 najbardziej aktywnych klientów -> zrobione
+b) top 20 najbardziej aktywnych klientów -> zrobione
 
-- nieopłacone rezerwacje indywidualne
+c) nieopłacone rezerwacje indywidualne
 
--nieopłacone rezerwacje firmowe
+d) nieopłacone rezerwacje firmowe
 
 -rezerwacje które powinny być anulowane
 
