@@ -175,7 +175,7 @@ foreign key (WorkShopID) references WorkShop(WorkShopID) on delete cascade
 use Conferences
 create table Employees(
 	EmployeeID int identity(1,1) primary key,
-	ConferenceParticipantID int,
+	PersonID int,
 	CompanyID int
 )
 
@@ -187,7 +187,10 @@ foreign key (CompanyID) references Company(CompanyID) on delete cascade
 use Conferences
 alter table Employees
 add constraint FK_Employees_TO_ConferenceParticipantID
-foreign key (ConferenceParticipantID) references ConferenceParticipant(ConferenceParticipantID) on delete no action
+foreign key (PersonID) references Person(PersonID) on delete no action
+
+alter table Employees
+add PersonID int
 
 --ConferenceDayParticipant
 
