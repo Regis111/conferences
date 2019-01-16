@@ -40,8 +40,7 @@ end
 --b) dodaje dzieñ do konferencji
 create procedure [PROC_AddDayToConference]
 	@ConferenceID int,
-	@DayNum int,	
-	@ConferenceDayID int
+	@DayNum int
 as
 begin
 	set nocount on;
@@ -67,6 +66,46 @@ begin
 	
 	begin catch
 		declare @message nvarchar(3000) = 'Couldnt add this conferenceDay: ' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+end
+
+--e) dodaje warsztat do dnia konferencji
+create procedure [PROC_AddWorkShop]
+	@WorkShopName char(255),
+	@SeatsLimit int,
+	@ConferenceDayID int,
+	@StartTime time,
+	@EndTime time
+as
+begin
+	begin try
+		if not exists (select * from ConferenceDays where ConferenceDayID = @ConferenceDayID)
+		begin;
+			throw 50005,'No such day => cannot add workshop',1
+		end
+
+		if exists (select * from WorkShop where ConferenceDayID = @ConferenceDayID and @WorkShopName = WorkShopName)
+		begin;
+			throw 50005,'Already added such WorkShop',1
+		end
+		insert into WorkShop(
+			WorkShopName,
+			SeatsLimit,
+			ConferenceDayID,
+			StartTime,
+			EndTime
+		)
+		values(
+			@WorkShopName,
+			@SeatsLimit,
+			@ConferenceDayID,
+			@StartTime,
+			@EndTime
+		)
+	end try
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt add this WorkShop: ' + ERROR_MESSAGE();
 		throw 60000,@message,1;
 	end catch
 end
@@ -119,7 +158,6 @@ end
 --d) dodaje rezerwacjê na konferencjê
 
 create procedure [PROC_AddReservation]
-	@ReservationDate date,
 	@CustomerID int,
 	@ConferenceID int,
 	@PaymentDate date
@@ -148,7 +186,7 @@ begin
 			PaymentDate
 		)
 		values(
-			@ReservationDate,
+			getdate(),
 			@CustomerID,
 			@ConferenceID,
 			@PaymentDate
@@ -161,47 +199,12 @@ begin
 	end catch
 end
 
---e) dodaje warsztat do dnia konferencji
+exec PROC_AddWorkShop @WorkShopName = 'Naucz siê baz danych z Leszkiem Siwikiem', @SeatsLimit = 12,@ConferenceDayID = 1,@StartTime = '12:30',@EndTime = '14:00' 
+exec PROC_AddWorkShop @WorkShopName = 'Naucz siê systemów operacyjnych z Leszkiem Siwikiem', @SeatsLimit = 12,@ConferenceDayID = 1,@StartTime = '15:00',@EndTime = '16:30'
 
-create procedure [PROC_AddWorkShop]
-	@WorkShopName char(255),
-	@SeatsLimit int,
-	@ConferenceDayID int,
-	@StartTime datetime,
-	@EndTime datetime
-as
-begin
-	begin try
-		if not exists (select * from ConferenceDays where ConferenceDayID = @ConferenceDayID)
-		begin;
-			throw 50005,'No such day => cannot add workshop',1
-		end
-		if exists (select * from WorkShop where ConferenceDayID = @ConferenceDayID and @WorkShopName = WorkShopName)
-		begin;
-			throw 50005,'Already added such WorkShop',1
-		end
-		insert into WorkShop(
-			WorkShopName,
-			ReservedSeats,
-			SeatsLimit,
-			ConferenceDayID,
-			StartTime,
-			EndTime
-		)
-		values(
-			@WorkShopName,
-			0,
-			@SeatsLimit,
-			@ConferenceDayID,
-			@StartTime,
-			@EndTime
-		)
-	end try
-	begin catch
-		declare @message nvarchar(3000) = 'Couldnt add this WorkShop: ' + ERROR_MESSAGE();
-		throw 60000,@message,1;
-	end catch
-end
+
+ 
+
 --f) dodaje klienta firmowego
 create procedure [AddCompanyCustomer]
 	@Company char(255),
@@ -261,16 +264,7 @@ end
 
 
 
-
-
-
-
-
-
-
-
-
-
+--koniec implementacji
 
 declare @s date 
 set @s = '2008-01-01'
