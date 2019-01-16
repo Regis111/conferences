@@ -144,10 +144,13 @@ create table WorkShop(
 	WorkShopID int identity(1,1) primary key,
 	WorkShopName char(255),
 	SeatsLimit int,
-	StartTime datetime,
-	EndTime datetime,
+	StartTime time,
+	EndTime time,
 	ConferenceDayID int
 )
+
+alter table WorkShop
+add price money
 
 use Conferences
 alter table WorkShop
@@ -160,8 +163,8 @@ use Conferences
 create table WorkShopReservation(
 	WorkShopReservationID int identity(1,1) primary key,
 	WebPage char(255),
-	NormalTicket decimal(10,2),
-	StudentTicket decimal(10,2),
+	NormalTickets int,
+	StudentTickets int,
 	WorkShopID int
 )
 

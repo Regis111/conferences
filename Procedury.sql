@@ -70,7 +70,7 @@ begin
 	end catch
 end
 
---e) dodaje warsztat do dnia konferencji
+--c) dodaje warsztat do dnia konferencji
 create procedure [PROC_AddWorkShop]
 	@WorkShopName char(255),
 	@SeatsLimit int,
@@ -110,10 +110,54 @@ begin
 	end catch
 end
 
---c) dodaje rezerwacjê dnia do rezerwacji klienta
+--d) dodaje rezerwacjê na konferencjê
+
+create procedure [PROC_AddReservation]
+	@CustomerID int,
+	@ConferenceID int,
+	@PaymentDate date
+as
+begin
+	begin try
+		if not exists (select * from Customers where CustomerID = @CustomerID)
+		begin;
+			throw 50005,'No such customer => cannot add reservation',1
+		end 
+
+		if not exists (select * from Conferences where ConferenceID = @ConferenceID)
+		begin;
+			throw 50005,'No such conference => cannot add reservation',1
+		end
+
+		if exists (select * from Reservations where CustomerID = @CustomerID and ConferenceID = @ConferenceID)
+		begin;
+			throw 50007,'Already added reservation',1
+		end
+
+		insert into Reservations(
+			ReservationDate,
+			CustomerID,
+			ConferenceID,
+			PaymentDate
+		)
+		values(
+			getdate(),
+			@CustomerID,
+			@ConferenceID,
+			@PaymentDate
+		)
+	end try
+
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt add this Reservation: ' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+end
+
+--e) dodaje rezerwacjê dnia do rezerwacji klienta
 create procedure [PROC_AddDayReservation]
-	@NormalTicket decimal(10,2),
-	@StudentTicket decimal(10,2),
+	@NormalTickets int = 0,
+	@StudentTicket int = 0,
 	@ReservationID int,
 	@ConferenceDayID int
 as
@@ -155,57 +199,10 @@ begin
 		throw 60000,@message,1;
 	end catch
 end
---d) dodaje rezerwacjê na konferencjê
 
-create procedure [PROC_AddReservation]
-	@CustomerID int,
-	@ConferenceID int,
-	@PaymentDate date
-as
-begin
-	begin try
-		if not exists (select * from Customers where CustomerID = @CustomerID)
-		begin;
-			throw 50005,'No such reservation => cannot add day reservation',1
-		end 
+-- f) dodaje rezerwacjê warsztatu do rezerwacji dnia
 
-		if not exists (select * from Conferences where ConferenceID = @ConferenceID)
-		begin;
-			throw 50005,'No such conference => cannot add day',1
-		end
-
-		if exists (select * from Reservations where CustomerID = @CustomerID and ConferenceID = @ConferenceID)
-		begin;
-			throw 50007,'Already added day_reservation',1
-		end
-
-		insert into Reservations(
-			ReservationDate,
-			CustomerID,
-			ConferenceID,
-			PaymentDate
-		)
-		values(
-			getdate(),
-			@CustomerID,
-			@ConferenceID,
-			@PaymentDate
-		)
-	end try
-
-	begin catch
-		declare @message nvarchar(3000) = 'Couldnt add this Reservation: ' + ERROR_MESSAGE();
-		throw 60000,@message,1;
-	end catch
-end
-
-exec PROC_AddWorkShop @WorkShopName = 'Naucz siê baz danych z Leszkiem Siwikiem', @SeatsLimit = 12,@ConferenceDayID = 1,@StartTime = '12:30',@EndTime = '14:00' 
-exec PROC_AddWorkShop @WorkShopName = 'Naucz siê systemów operacyjnych z Leszkiem Siwikiem', @SeatsLimit = 12,@ConferenceDayID = 1,@StartTime = '15:00',@EndTime = '16:30'
-
-
- 
-
---f) dodaje klienta firmowego
+--g) dodaje klienta firmowego
 create procedure [AddCompanyCustomer]
 	@Company char(255),
 	@PhoneNumber int,
@@ -241,19 +238,64 @@ begin
 	end catch
 end
 
---g) dodaje pracownika firmy
+--h) dodaje pracownika firmy
+create procedure [FUNC_AddEmployee]
+	@CompanyID int,
+	@PersonID int
+as
+begin
+	
+	begin try
 
+		if not exists (select * from Company where CompanyID = @CompanyID)
+		begin;
+			throw 50005,'No such company => cannot add day reservation',1
+		end 
 
---h) dodaje uczestnika do konferencji z konkretnej rezerwacji (wiadomo na jakie dni go dodaæ) + informacja czy jest studentem
+		if not exists (select * from Person where PersonID = @PersonID)
+		begin;
+			throw 50005,'No such conference => cannot add day',1
+		end
 
---i) dodaje uczestnika na warsztat (sprawdza czy nie bêdzie na dwóch jednoczeœnie)
+		if exists (select * from Employees where PersonID = @PersonID and CompanyID = @CompanyID)
+		begin;
+			throw 50007,'Already added day_reservation',1
+		end
+
+		insert into Employees(
+			CompanyID,
+			PersonID
+		)
+		values(
+			@CompanyID,
+			@PersonID
+		)
+	end try
+
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt add this conferenceDay: ' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+--i) dodaje uczestnika do konferencji z konkretnej rezerwacji (wiadomo na jakie dni go dodaæ) + informacja czy jest studentem
+
+--j) dodaje uczestnika na warsztat (sprawdza czy nie bêdzie na dwóch jednoczeœnie)
  --(dodaje do WorkShopReservation i do WorkShopParticipant) 
 
---j) dodaje klienta indywidualnego
+--k) dodaje klienta indywidualnego
+
+--l) dodanie cz³owieka (person) do systemu
+
+--m) dodaje osobê do konkretnej konferecji
+
+--n) dodaje osobê do konkretnej rezerwacji dnia
+
+--o) dodaje osobê do konkretnej rezerwacji warsztatu
 
 --INNE
 
 --a) p³aci za rezerwacjê
+
+
 
 --b) usuwa rezerwacjê jeœli nie op³acona na tydzieñ przed konferencj¹
 
