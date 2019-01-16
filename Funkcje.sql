@@ -138,22 +138,57 @@ end
 create function [FUNC_DaysOfConference] (@ConferenceID int)
 	returns table
 as 
-	return (select * from ConferenceDays where ConferenceID = @ConferenceID)
+	return (select DayNumber from ConferenceDays where ConferenceID = @ConferenceID)
 end
 
---h) lista participantów na konferencji
+--h) lista participantów na konkretny dzieñ
 
 create function [FUNC_ParticipantsOnCertainDay] (@DayID int)
 	returns table
 as
 	return 
-	(select p.PersonID,p.First_Name,p.Last_Name from ConferenceDayReservation cdr
+	(select distinct p.PersonID,p.First_Name,p.Last_Name from ConferenceDayReservation cdr
 	join ConferenceDayParticipant cdp on cdp.ConferenceDayReservationID = cdr.ConferenceDayReservationID
 	join ConferenceParticipant cp on cp.ConferenceParticipantID = cdp.ConferenceParticipantID
 	join Person p on p.PersonID = cp.PersonID
+	where cdr.ConferenceDayID = @DayID
 	)
---i) lista participantów na konkretny dzieñ
+--i) lista participantów na konkretn¹ konferencjê
+
+create function [FUNC_ParticipantsOnCertainConference] (@ConferenceID int)
+	returns table
+as
+	return
+	(
+	select distinct p.PersonID,p.First_Name,p.Last_Name from ConferenceDays cd
+	join ConferenceDayReservation cdr on cdr.ConferenceDayID = cd.ConferenceDayID
+	join ConferenceDayParticipant cdp on cdp.ConferenceDayReservationID = cdr.ConferenceDayReservationID
+	join ConferenceParticipant cp on cp.ConferenceParticipantID = cdp.ConferenceParticipantID
+	join Person p on p.PersonID = cp.PersonID
+	where cd.ConferenceID = @ConferenceID
+	)
 
 --j) lista participantów na konkretny warsztat
 
+create function [FUNC_ParticipantsOnCertainWorkShop] (@WorkShopID int)
+	returns table
+as 
+	return
+	(
+	select distinct p.PersonID,p.First_Name,p.Last_Name,p.Phone from  WorkShopReservation wsr
+	join WorkShopParticipant wsp on wsr.WorkShopReservationID = wsp.WorkShopReservationID
+	join ConferenceParticipant cp on cp.ConferenceParticipantID = wsp.ConferenceParticipantID
+	join Person p on p.PersonID = cp.PersonID
+	where wsr.WorkShopID = @WorkShopID
+	)
 --k) lista wszystkich warsztatów participanta na konkretn¹ konferencjê
+
+create function [FUNC_WorkShopsOfCertainParticipant] (@ConferenceParticipantID int)
+	returns table
+as
+	return
+	(select ws.WorkShopID,ws.WorkShopName from ConferenceParticipant cp
+	join WorkShopParticipant wsp on wsp.ConferenceParticipantID = cp.ConferenceParticipantID 
+	and cp.ConferenceParticipantID = @ConferenceParticipantID
+	join WorkShopReservation wsr on wsr.WorkShopReservationID = wsp.WorkShopReservationID
+	join WorkShop ws on ws.WorkShopID = wsr.WorkShopID)
