@@ -9,7 +9,7 @@ begin
 	
 	if not exists (select * from Conferences where ConferenceID = @ConferenceID)
 	begin;
-		throw 50001,'Wrong parameter - There is no such Conference in database',1
+		raiserror('No such WorkShop',0,1)
 	end
 	
 	return
@@ -39,7 +39,7 @@ as
 begin
 	if not exists (select * from Conferences where ConferenceID = @ConferenceID)
 	begin;
-		throw 50001,'Wrong parameter - There is no such Conference in database',1
+		raiserror('No such WorkShop',0,1)
 	end
 
 	return
@@ -69,7 +69,7 @@ begin
 	
 	if not exists (select * from ConferenceDays where ConferenceDayID = @DayID)
 	begin;
-		throw 50001,'Wrong parameter - There is no such ConferenceDay in database',1
+		raiserror('No such WorkShop',0,1)
 	end
 
 	return(
@@ -90,7 +90,7 @@ as
 begin
 	if not exists (select * from WorkShop where WorkShopID = @WorkShop1ID) or not exists (select * from WorkShop where WorkShopID = @WorkShop2ID)
 	begin;
-		throw 50001,'Wrong parameter - There is no such ConferenceDay in database',1
+		raiserror('No such WorkShop',0,1)
 	end
 	
 	declare @start1 datetime = (select StartTime from WorkShop where WorkShopID = @WorkShop1ID)
@@ -121,9 +121,8 @@ as
 begin
 	if not exists (select * from WorkShop where WorkShopID = @WorkShopID)
 	begin;
-			throw 50001,'Wrong parameter - There is no such WorkShop in database',1
+		raiserror('No such WorkShop',0,1)
 	end
-
 	return(
 		(select SeatsLimit from WorkShop where WorkShopID = @WorkShopID) - 
 		(select * from WorkShop w
@@ -139,27 +138,20 @@ end
 create function [FUNC_DaysOfConference] (@ConferenceID int)
 	returns table
 as 
-begin
-	begin try
-		if not exists (select * from Conferences where ConferenceID = @ConferenceID)
-		begin;
-				throw 50001,'Wrong parameter - There is no such Conference in database',1
-		end
-	
-		return (
-			select * from ConferenceDays where @ConferenceID = 
-		)
-	end try
-
-
-	try catch
-
-	end catch
-
+	return (select * from ConferenceDays where ConferenceID = @ConferenceID)
 end
 
 --h) lista participantów na konferencji
 
+create function [FUNC_ParticipantsOnCertainDay] (@DayID int)
+	returns table
+as
+	return 
+	(select p.PersonID,p.First_Name,p.Last_Name from ConferenceDayReservation cdr
+	join ConferenceDayParticipant cdp on cdp.ConferenceDayReservationID = cdr.ConferenceDayReservationID
+	join ConferenceParticipant cp on cp.ConferenceParticipantID = cdp.ConferenceParticipantID
+	join Person p on p.PersonID = cp.PersonID
+	)
 --i) lista participantów na konkretny dzieñ
 
 --j) lista participantów na konkretny warsztat
