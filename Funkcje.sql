@@ -15,12 +15,16 @@ begin
 	return
 	(
 	(select sum(NormalTicket) from WorkShopReservation wsr
+	join WorkShop ws on ws.WorkShopID = wsr.WorkShopID
+	join ConferenceDays cd on cd.ConferenceDayID = ws.ConferenceDayID and cd.ConferenceID = @ConferenceID
 	join WorkShopParticipant wsp on wsp.WorkShopReservationID = wsr.WorkShopReservationID
 	join ConferenceParticipant cp on wsp.ConferenceParticipantID = cp.ConferenceParticipantID
 	left join Student s on s.ConferenceParticipantID = cp.ConferenceParticipantID
 	where cp.ConferenceParticipantID is null)
 	+
 	(select sum(StudentTicket) from WorkShopReservation wsr
+	join WorkShop ws on ws.WorkShopID = wsr.WorkShopID
+	join ConferenceDays cd on cd.ConferenceDayID = ws.ConferenceDayID and cd.ConferenceID = @ConferenceID
 	join WorkShopParticipant wsp on wsp.WorkShopReservationID = wsr.WorkShopReservationID
 	join ConferenceParticipant cp on wsp.ConferenceParticipantID = cp.ConferenceParticipantID
 	join Student s on s.ConferenceParticipantID = cp.ConferenceParticipantID)
@@ -33,7 +37,6 @@ create function [FUNC_PaymentForDays] (@ConferenceID int)
 	returns int
 as
 begin
-	
 	if not exists (select * from Conferences where ConferenceID = @ConferenceID)
 	begin;
 		throw 50001,'Wrong parameter - There is no such Conference in database',1
@@ -42,12 +45,14 @@ begin
 	return
 	(
 	(select sum(NormalTicket) from ConferenceDayReservation cdr
+	join ConferenceDays cd on cd.ConferenceDayID = cdr.ConferenceDayID and cd.ConferenceID = @ConferenceID
 	join ConferenceDayParticipant cdp on cdp.ConferenceDayReservationID = cdr.ConferenceDayReservationID
 	join ConferenceParticipant cp on cdp.ConferenceParticipantID = cp.ConferenceParticipantID
 	left join Student s on s.ConferenceParticipantID = cp.ConferenceParticipantID
 	where cp.ConferenceParticipantID is null)
 	+
 	(select sum(StudentTicket) from ConferenceDayReservation cdr
+	join ConferenceDays cd on cd.ConferenceDayID = cdr.ConferenceDayID and cd.ConferenceID = @ConferenceID
 	join ConferenceDayParticipant cdp on cdp.ConferenceDayReservationID = cdr.ConferenceDayReservationID
 	join ConferenceParticipant cp on cdp.ConferenceParticipantID = cp.ConferenceParticipantID
 	join Student s on s.ConferenceParticipantID = cp.ConferenceParticipantID)
@@ -68,9 +73,12 @@ begin
 	end
 
 	return(
-		select sum(SeatsLimit - ReservedSeats) from WorkShop w
-		join ConferenceDays cd on cd.ConferenceDayID = w.ConferenceDayID
-		where cd.ConferenceDayID = @DayID
+		(select SUM(SeatsLimit) from WorkShop where ConferenceDayID = @DayID)
+		-
+		(select COUNT(wsp.ConferenceParticipantID) from WorkShop w
+		join WorkShopReservation wsr on wsr.WorkShopID = w.WorkShopID
+		join WorkShopParticipant wsp on wsp.WorkShopReservationID = wsr.WorkShopReservationID
+		where w.ConferenceDayID = @DayID)
 	)
 end
 
@@ -107,6 +115,53 @@ end
 
 --e) iloœæ wolnych miejsc na konkretny warsztat
 
---f) koszt konkretnej rezerwacji
+create function [FUNC_AvailableSeatsOnWorkShop](@WorkShopID int)
+	returns int
+as
+begin
+	if not exists (select * from WorkShop where WorkShopID = @WorkShopID)
+	begin;
+			throw 50001,'Wrong parameter - There is no such WorkShop in database',1
+	end
 
---g)
+	return(
+		(select SeatsLimit from WorkShop where WorkShopID = @WorkShopID) - 
+		(select * from WorkShop w
+		join WorkShopReservation wsr on wsr.WorkShopID = w.WorkShopID
+		join WorkShopParticipant wsp on wsp.WorkShopReservationID = wsr.WorkShopReservationID
+		where w.WorkShopID = @WorkShopID) 
+	)
+end
+
+--f) koszt konkretnej rezerwacji (na podstawie paymentDate) (wzór do wyznaczania ustalamy na (1-x)*price) price-koszt bez ustalania daty p³atnoœci, x - liczba dni od konferencji/100
+
+--g) lista dni konkretnej konferencji
+create function [FUNC_DaysOfConference] (@ConferenceID int)
+	returns table
+as 
+begin
+	begin try
+		if not exists (select * from Conferences where ConferenceID = @ConferenceID)
+		begin;
+				throw 50001,'Wrong parameter - There is no such Conference in database',1
+		end
+	
+		return (
+			select * from ConferenceDays where @ConferenceID = 
+		)
+	end try
+
+
+	try catch
+
+	end catch
+
+end
+
+--h) lista participantów na konferencji
+
+--i) lista participantów na konkretny dzieñ
+
+--j) lista participantów na konkretny warsztat
+
+--k) lista wszystkich warsztatów participanta na konkretn¹ konferencjê

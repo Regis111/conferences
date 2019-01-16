@@ -237,7 +237,9 @@ begin
 		throw 60000,@message,1;
 	end catch
 end
+
 --g) dodaje pracownika firmy
+
 
 --h) dodaje uczestnika do konferencji z konkretnej rezerwacji (wiadomo na jakie dni go dodaæ) + informacja czy jest studentem
 

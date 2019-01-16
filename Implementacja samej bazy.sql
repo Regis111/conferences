@@ -78,8 +78,20 @@ foreign key (CustomerID) references Customers(CustomerID) on delete cascade
 use Conferences
 create table ConferenceParticipant(
 	ConferenceParticipantID int identity(1,1) primary key,
+	PersonID int
+)
+
+alter table ConferenceParticipant
+add constraint FK_ConferenceParticipant_TO_Person
+foreign key (PersonID) references Person(PersonID) on delete cascade
+
+--Person
+use Conferences
+create table Person(
+	PersonID int identity(1,1) primary key,
 	First_Name char(30),
-	Last_Name char(30)
+	Last_Name char(30),
+	Phone varchar(50)
 )
 
 --Reservations
@@ -131,12 +143,12 @@ use Conferences
 create table WorkShop(
 	WorkShopID int identity(1,1) primary key,
 	WorkShopName char(255),
-	ReservedSeats int,
 	SeatsLimit int,
 	StartTime datetime,
 	EndTime datetime,
 	ConferenceDayID int
 )
+
 use Conferences
 alter table WorkShop
 add constraint FK_WorkShop_TO_ConferenceDays
@@ -218,7 +230,7 @@ foreign key (WorkShopReservationID) references WorkShopReservation(WorkShopReser
 use Conferences
 create table IndividualClient(
 	CustomerID int,
-	ConferenceParticipantID int
+	PersonID int
 )
 
 use Conferences
@@ -228,8 +240,11 @@ foreign key (CustomerID) references Customers(CustomerID) on delete cascade
 
 use Conferences
 alter table IndividualClient
-add constraint FK_IndividualClient_TO_ConferenceParticipant
-foreign key (ConferenceParticipantID) references ConferenceParticipant(ConferenceParticipantID) on delete no action
+add constraint FK_IndividualClient_TO_Person
+foreign key (PersonID) references Person(PersonID) on delete no action
+
+alter table IndividualClient
+drop constraint 
 
 --Student
 
