@@ -2,14 +2,23 @@
 
 ## FUNKCJE
 
-a) zarobek za jedną konferencję z samych warsztatów -> zrobione
+a) zarobek za jedną konferencję z samych warsztatów (do poprawy
 
-b)  zarobek za jedną konferencję z samych dni konferencji -> zrobione
+b) ilość wolnych miejsc na konkretny dzień (suma wolnych miejsc na wszystkich warsztatach na ten dzień) 
 
-c) ilość wolnych miejsc na konkretny dzień (suma wolnych miejsc na wszystkich warsztatach na ten dzień) -> zrobione
+c) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie 
 
-d) sprawdza czy dwa warsztaty nie odbywają się w tym samym czasie 
+d) ilość wolnych miejsc na konkretny warsztat
 
+e)koszt konkretnej rezerwacji (na podstawie paymentDate) (wzór do wyznaczania ustalamy na (1-x)*price) price-koszt bez ustalania daty p³atnoœci, x - liczba dni od konferencji/100
+
+f)lista dni konkretnej konferencji
+
+g) lista participantów na konkretny dzieñ
+
+h) lista participantów na konkretn¹ konferencjê
+
+i) lista participantów na konkretny warsztat
 ## WIDOKI
 
 a) Liczba osób na warsztat wraz z informacją o konferencji i dniu -> zrobione
