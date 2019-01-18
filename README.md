@@ -31,3 +31,27 @@ d) nieopłacone rezerwacje firmowe
 ...
 
 ## PROCEDURY
+
+a) dodaje konferencjê 
+
+b) dodaje dzieñ do konferencji
+
+c) dodaje warsztat do dnia konferencji
+
+d) dodaje rezerwacjê na konferencjê
+
+e) dodaje rezerwacjê dnia do rezerwacji klienta
+
+f) dodaje rezerwacjê warsztatu do rezerwacji dnia
+TO DO
+g) dodaje klienta firmowego
+
+h) dodaje pracownika firmy
+
+i) dodaje uczestnika do konferencji z konkretnej rezerwacji dnia + informacja czy jest studentem
+
+j) dodaje uczestnika na warsztat (sprawdza czy nie bêdzie na dwóch jednoczeœnie)
+
+k) dodaje klienta indywidualnego
+
+l) dodanie cz³owieka (person) do systemu
