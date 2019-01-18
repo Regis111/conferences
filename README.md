@@ -19,8 +19,14 @@
 8) lista participantów na konkretn¹ konferencjê
 
 9) lista participantów na konkretny warsztat
-
+------Do zrobienia-------
 10) lista wszystkich warsztatów participanta na konkretn¹ konferencjê
+
+11) Cena noemalnego biletu dla danego warsztatu
+
+12) Cena studenckiego biletu dla danego warsztatu (przelicznik 0,5*cena normalna)
+
+13) ID dnia konferencji na podstawie daty i conferenceID
 ## WIDOKI
 
 a) Liczba osób na warsztat wraz z informacją o konferencji i dniu -> zrobione
