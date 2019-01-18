@@ -438,7 +438,7 @@ begin
 	end catch
 end
 --m) dodaje osobê do konkretnej konferecji
-
+create procedure []
 --n) dodaje osobê do konkretnej rezerwacji dnia
 
 --o) dodaje osobê do konkretnej rezerwacji warsztatu

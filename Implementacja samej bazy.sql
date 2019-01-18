@@ -119,8 +119,8 @@ foreign key (CustomerID) references Customers(CustomerID)
 
 create table ConferenceDayReservation(
 	ConferenceDayReservationID int identity(1,1) primary key,
-	NormalTicket decimal(10,2),
-	StudentTicket decimal(10,2),
+	NormalTickets int,
+	StudentTickets int,
 	ConferenceDayID int,
 	ReservationID int
 )
@@ -135,7 +135,7 @@ foreign key (ReservationID) references Reservations(ReservationID)
 
 alter table ConferenceDayReservation
 with check add constraint ConferenceDayReservation_Price
-check (([NormalTicket] >= 0 and [StudentTicket] >= 0))
+check (([NormalTickets] >= 0 and [StudentTickets] >= 0))
 
 --WorkShop
 

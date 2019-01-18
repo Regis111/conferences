@@ -2,65 +2,7 @@
 
 --a)zarobek za jedn¹ konferencjê z samych warsztatów
  
-create function [FUNC_PaymentForWorkShops] (@ConferenceID int)	
-	returns int
-as
-begin
-	
-	if not exists (select * from Conferences where ConferenceID = @ConferenceID)
-	begin;
-		raiserror('No such WorkShop',0,1)
-	end
-	
-	return
-	(
-	(select sum(NormalTicket) from WorkShopReservation wsr
-	join WorkShop ws on ws.WorkShopID = wsr.WorkShopID
-	join ConferenceDays cd on cd.ConferenceDayID = ws.ConferenceDayID and cd.ConferenceID = @ConferenceID
-	join WorkShopParticipant wsp on wsp.WorkShopReservationID = wsr.WorkShopReservationID
-	join ConferenceParticipant cp on wsp.ConferenceParticipantID = cp.ConferenceParticipantID
-	left join Student s on s.ConferenceParticipantID = cp.ConferenceParticipantID
-	where cp.ConferenceParticipantID is null)
-	+
-	(select sum(StudentTicket) from WorkShopReservation wsr
-	join WorkShop ws on ws.WorkShopID = wsr.WorkShopID
-	join ConferenceDays cd on cd.ConferenceDayID = ws.ConferenceDayID and cd.ConferenceID = @ConferenceID
-	join WorkShopParticipant wsp on wsp.WorkShopReservationID = wsr.WorkShopReservationID
-	join ConferenceParticipant cp on wsp.ConferenceParticipantID = cp.ConferenceParticipantID
-	join Student s on s.ConferenceParticipantID = cp.ConferenceParticipantID)
-	)
-end
-
---b) zarobek za jedn¹ konferencjê z samych dni konferencji 
-
-create function [FUNC_PaymentForDays] (@ConferenceID int)
-	returns int
-as
-begin
-	if not exists (select * from Conferences where ConferenceID = @ConferenceID)
-	begin;
-		raiserror('No such WorkShop',0,1)
-	end
-
-	return
-	(
-	(select sum(NormalTicket) from ConferenceDayReservation cdr
-	join ConferenceDays cd on cd.ConferenceDayID = cdr.ConferenceDayID and cd.ConferenceID = @ConferenceID
-	join ConferenceDayParticipant cdp on cdp.ConferenceDayReservationID = cdr.ConferenceDayReservationID
-	join ConferenceParticipant cp on cdp.ConferenceParticipantID = cp.ConferenceParticipantID
-	left join Student s on s.ConferenceParticipantID = cp.ConferenceParticipantID
-	where cp.ConferenceParticipantID is null)
-	+
-	(select sum(StudentTicket) from ConferenceDayReservation cdr
-	join ConferenceDays cd on cd.ConferenceDayID = cdr.ConferenceDayID and cd.ConferenceID = @ConferenceID
-	join ConferenceDayParticipant cdp on cdp.ConferenceDayReservationID = cdr.ConferenceDayReservationID
-	join ConferenceParticipant cp on cdp.ConferenceParticipantID = cp.ConferenceParticipantID
-	join Student s on s.ConferenceParticipantID = cp.ConferenceParticipantID)
-	)
-end
-
-
---c)  iloœæ wolnych miejsc na konkretny dzieñ (suma wolnych miejsc na wszystkich warsztatach na ten dzieñ)
+--b)  iloœæ wolnych miejsc na konkretny dzieñ (suma wolnych miejsc na wszystkich warsztatach na ten dzieñ)
 
 create function [FUNC_NumberOfAvailableSeatsOnDay] (@DayID int)
 	returns int
@@ -125,7 +67,7 @@ begin
 	end
 	return(
 		(select SeatsLimit from WorkShop where WorkShopID = @WorkShopID) - 
-		(select * from WorkShop w
+		(select count(*) from WorkShop w
 		join WorkShopReservation wsr on wsr.WorkShopID = w.WorkShopID
 		join WorkShopParticipant wsp on wsp.WorkShopReservationID = wsr.WorkShopReservationID
 		where w.WorkShopID = @WorkShopID) 
@@ -192,3 +134,5 @@ as
 	and cp.ConferenceParticipantID = @ConferenceParticipantID
 	join WorkShopReservation wsr on wsr.WorkShopReservationID = wsp.WorkShopReservationID
 	join WorkShop ws on ws.WorkShopID = wsr.WorkShopID)
+
+--l)
