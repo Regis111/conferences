@@ -1,8 +1,8 @@
 --Funkcje
 
---a)zarobek za jedn¹ konferencjê z samych warsztatów
+--1)zarobek za jednÂ¹ konferencjÃª z samych warsztatÃ³w
  
---b)  iloœæ wolnych miejsc na konkretny dzieñ (suma wolnych miejsc na wszystkich warsztatach na ten dzieñ)
+--2)  iloÅ“Ã¦ wolnych miejsc na konkretny dzieÃ± (suma wolnych miejsc na wszystkich warsztatach na ten dzieÃ±)
 
 create function [FUNC_NumberOfAvailableSeatsOnDay] (@DayID int)
 	returns int
@@ -24,7 +24,7 @@ begin
 	)
 end
 
---d) czy dwa warsztaty s¹ w tym samym czasie 
+--3) czy dwa warsztaty sÂ¹ w tym samym czasie 
 
 create function [FUNC_AreTheseWorkShopsAtTheSameTime] (@WorkShop1ID int, @WorkShop2ID int)
 	returns bit
@@ -55,7 +55,7 @@ begin
 	return 0
 end
 
---e) iloœæ wolnych miejsc na konkretny warsztat
+--4) iloÅ“Ã¦ wolnych miejsc na konkretny warsztat
 
 create function [FUNC_AvailableSeatsOnWorkShop](@WorkShopID int)
 	returns int
@@ -74,16 +74,16 @@ begin
 	)
 end
 
---f) koszt konkretnej rezerwacji (na podstawie paymentDate) (wzór do wyznaczania ustalamy na (1-x)*price) price-koszt bez ustalania daty p³atnoœci, x - liczba dni od konferencji/100
+--5) koszt konkretnej rezerwacji (na podstawie paymentDate) (wzÃ³r do wyznaczania ustalamy na (1-x)*price) price-koszt bez ustalania daty pÂ³atnoÅ“ci, x - liczba dni od konferencji/100
 
---g) lista dni konkretnej konferencji
+--6) lista dni konkretnej konferencji
 create function [FUNC_DaysOfConference] (@ConferenceID int)
 	returns table
 as 
 	return (select DayNumber from ConferenceDays where ConferenceID = @ConferenceID)
 end
 
---h) lista participantów na konkretny dzieñ
+--7) lista participantÃ³w na konkretny dzieÃ±
 
 create function [FUNC_ParticipantsOnCertainDay] (@DayID int)
 	returns table
@@ -95,7 +95,7 @@ as
 	join Person p on p.PersonID = cp.PersonID
 	where cdr.ConferenceDayID = @DayID
 	)
---i) lista participantów na konkretn¹ konferencjê
+--8) lista participantÃ³w na konkretnÂ¹ konferencjÃª
 
 create function [FUNC_ParticipantsOnCertainConference] (@ConferenceID int)
 	returns table
@@ -110,7 +110,7 @@ as
 	where cd.ConferenceID = @ConferenceID
 	)
 
---j) lista participantów na konkretny warsztat
+--9) lista participantÃ³w na konkretny warsztat
 
 create function [FUNC_ParticipantsOnCertainWorkShop] (@WorkShopID int)
 	returns table
@@ -123,7 +123,7 @@ as
 	join Person p on p.PersonID = cp.PersonID
 	where wsr.WorkShopID = @WorkShopID
 	)
---k) lista wszystkich warsztatów participanta na konkretn¹ konferencjê
+--10) lista wszystkich warsztatÃ³w participanta na konkretnÂ¹ konferencjÃª
 
 create function [FUNC_WorkShopsOfCertainParticipant] (@ConferenceParticipantID int)
 	returns table
