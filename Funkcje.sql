@@ -135,4 +135,7 @@ as
 	join WorkShopReservation wsr on wsr.WorkShopReservationID = wsp.WorkShopReservationID
 	join WorkShop ws on ws.WorkShopID = wsr.WorkShopID)
 
---l)
+--11)Cena noemalnego biletu dla danego warsztatu
+--12)Cena studenckiego biletu dla danego warsztatu (przelicznik 0,5*cena normalna)
+--13)ID dnia konferencji na podstawie daty i conferenceID
+
