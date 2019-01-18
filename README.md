@@ -21,6 +21,7 @@
 9) lista participantów na konkretny warsztat
 
 ------Do zrobienia-------
+
 10) lista wszystkich warsztatów participanta na konkretn¹ konferencjê
 
 11) Cena noemalnego biletu dla danego warsztatu
