@@ -192,9 +192,6 @@ alter table Employees
 add constraint FK_Employees_TO_ConferenceParticipantID
 foreign key (PersonID) references Person(PersonID) on delete no action
 
-alter table Employees
-add PersonID int
-
 --ConferenceDayParticipant
 
 use Conferences
