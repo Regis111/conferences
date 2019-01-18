@@ -19,6 +19,7 @@
 8) lista participantów na konkretn¹ konferencjê
 
 9) lista participantów na konkretny warsztat
+
 ------Do zrobienia-------
 10) lista wszystkich warsztatów participanta na konkretn¹ konferencjê
 
