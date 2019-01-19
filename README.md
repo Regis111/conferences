@@ -28,7 +28,6 @@
 
 12) Cena studenckiego biletu dla danego warsztatu (przelicznik 0,5*cena normalna)
 
-13) ID dnia konferencji na podstawie daty i conferenceID
 ## WIDOKI
 
 a) Liczba osób na warsztat wraz z informacją o konferencji i dniu -> zrobione
