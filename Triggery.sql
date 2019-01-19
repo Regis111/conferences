@@ -8,8 +8,5 @@
 
 --Blokuje mo¿liwoœæ rezerwowania je¿eli jest mniej ni¿ tydzieñ do rezerwacji
 
---Blokuje zapis na warsztat je¿eli uczestnik jest ju¿ zapisany na jeden w tym samym czasie 
---(Skorzystaæ z funkcji ju¿ napisanej sprawdzaj¹cej czy dwa warsztaty nie pokrywaj¹ siê)
-
 --Blokuje dodawanie dnia konferencji je¿eli wykracza poza czas trwania konferencji
 
