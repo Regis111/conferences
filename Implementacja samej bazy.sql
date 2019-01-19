@@ -65,7 +65,6 @@ check (([Email] like  '%@%'))
 create table Company(
 	CompanyID int identity(1,1) primary key,
 	Company char(255) unique ,
-	PhoneNumber int unique ,
 	CustomerID int
 )
 
@@ -168,6 +167,13 @@ create table WorkShopReservation(
 	WorkShopID int
 )
 
+alter table WorkShopReservation
+add ReservationDayID int
+
+alter table WorkShopReservation
+add constraint FK_WorkShopReservation_TO_Reservations
+foreign key (ReservationDayID) references ConferenceDayReservation(ConferenceDayReservationID)
+
 use Conferences
 alter table WorkShopReservation
 add constraint FK_WorkShopReservation_TO_WorkShop
@@ -246,8 +252,6 @@ alter table IndividualClient
 add constraint FK_IndividualClient_TO_Person
 foreign key (PersonID) references Person(PersonID) on delete no action
 
-alter table IndividualClient
-drop constraint 
 
 --Student
 
@@ -260,4 +264,3 @@ use Conferences
 alter table Student
 add constraint FK_Student_TO_ConferenceParticipant
 foreign key (ConferenceParticipantID) references ConferenceParticipant(ConferenceParticipantID)
-

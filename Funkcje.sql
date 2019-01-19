@@ -26,33 +26,35 @@ end
 
 --3) czy dwa warsztaty s¹ w tym samym czasie 
 
+drop function dbo.FUNC_AreTheseWorkShopsAtTheSameTime
+
 create function [FUNC_AreTheseWorkShopsAtTheSameTime] (@WorkShop1ID int, @WorkShop2ID int)
 	returns bit
 as
 begin
 	if not exists (select * from WorkShop where WorkShopID = @WorkShop1ID) or not exists (select * from WorkShop where WorkShopID = @WorkShop2ID)
 	begin;
-		raiserror('No such WorkShop',0,1)
+		return cast('Error happened here.' as int);
 	end
 	
-	declare @start1 datetime = (select StartTime from WorkShop where WorkShopID = @WorkShop1ID)
-	declare @end1 datetime = (select EndTime from WorkShop where WorkShopID = @WorkShop1ID)
-	declare @start2 datetime = (select StartTime from WorkShop where WorkShopID = @WorkShop2ID)
-	declare @end2 datetime = (select EndTime from WorkShop where WorkShopID = @WorkShop2ID)
+	declare @start1 time = (select StartTime from WorkShop where WorkShopID = @WorkShop1ID)
+	declare @end1 time = (select EndTime from WorkShop where WorkShopID = @WorkShop1ID)
+	declare @start2 time = (select StartTime from WorkShop where WorkShopID = @WorkShop2ID)
+	declare @end2 time = (select EndTime from WorkShop where WorkShopID = @WorkShop2ID)
 	
 	if @start1 < @start2 and @start2 < @end1
-		return 1
+		return 0
 	
 	if @start2 < @start1 and @start1 < @end2
-		return 1
+		return 0
 
 	if @start1 <= @start2 and @end1 >= @end2
-		return 1
+		return 0
 
 	if @start2 <= @start1 and @end2 >= @end1
-		return 1
+		return 0
 
-	return 0
+	return 1
 end
 
 --4) iloœæ wolnych miejsc na konkretny warsztat

@@ -42,6 +42,9 @@ select cd.ConferenceID,cd.ConferenceDayID,cd.DayNumber,w.WorkShopID,w.WorkShopNa
 join WorkShop w on cd.ConferenceDayID = w.ConferenceDayID
 where (w.SeatsLimit - w.ReservedSeats) > 0
 
---1f)
+--1f) rezerwacje które maj¹ byæ op³acone do jutra
 
+--1g) iloœæ rezerwacji na konferencje
+
+--1h) 
 
