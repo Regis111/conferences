@@ -1,8 +1,8 @@
 --PROCEDURY
 
 --a) dodaje konferencjê
-
-create procedure [PROC_addConference]
+drop procedure  [addConference]
+create procedure [AddConference]
 	@StartDate date,
 	@EndDate date,
 	@City char(50),
@@ -37,8 +37,9 @@ begin
 	end catch
 end
 
+
 --b) dodaje dzieñ do konferencji
-create procedure [PROC_AddDayToConference]
+create procedure [AddDayToConference]
 	@ConferenceID int,
 	@DayNum int
 as
@@ -70,8 +71,9 @@ begin
 	end catch
 end
 
+drop procedure [PROC_AddWorkShop]
 --c) dodaje warsztat do dnia konferencji
-create procedure [PROC_AddWorkShop]
+create procedure [AddWorkShop]
 	@WorkShopName char(255),
 	@SeatsLimit int,
 	@ConferenceDayID int,
@@ -111,8 +113,9 @@ begin
 end
 
 --d) dodaje rezerwacjê na konferencjê
+drop procedure [PROC_AddReservation]
 
-create procedure [PROC_AddReservation]
+create procedure [AddReservation]
 	@CustomerID int,
 	@ConferenceID int,
 	@PaymentDate date
@@ -154,8 +157,9 @@ begin
 	end catch
 end
 
+drop procedure [PROC_AddDayReservation]
 --e) dodaje rezerwacjê dnia do rezerwacji
-create procedure [PROC_AddDayReservation]
+create procedure AddDayReservation
 	@NormalTickets int = 0,
 	@StudentTickets int = 0,
 	@ReservationID int,
@@ -203,7 +207,8 @@ end
 drop procedure PROC_AddWorkShopReservation
 
 -- f) dodaje rezerwacjê warsztatu do rezerwacji dnia
-create procedure [PROC_AddWorkShopReservation]
+
+create procedure AddWorkShopReservation
 	@WorkShopID int,
 	@ConferenceDayReservationID int,
 	@NormalTickets int ,
@@ -247,7 +252,7 @@ end
 
 --g) dodaje klienta firmowego
 
-create procedure [PROC_AddCompanyCustomer]
+create procedure AddCompanyCustomer
 	@Company char(255),
 	@PhoneNumber int,
 	@Street char(255),
@@ -282,8 +287,9 @@ begin
 	end catch
 end
 
+
 --h) dodaje pracownika firmy
-create procedure [PROC_AddEmployee]
+create procedure AddEmployee
 	@CompanyID int,
 	@PersonID int
 as
@@ -324,9 +330,9 @@ end
 
 --l) dodanie cz³owieka (person) do systemu
 
-drop procedure PROC_addPerson
+drop procedure addPerson
 
-create procedure [PROC_addPerson]
+create procedure AddPerson
 	@FirstName char(255),
 	@LastName char(255),
 	@Phone varchar(50)
@@ -356,8 +362,9 @@ begin
 end
 
 --k) dodaje klienta indywidualnego
+drop procedure AddIndividualClient
 
-create procedure [PROC_addIndividualClient]
+create procedure AddIndividualClient
 	@Email char(255),
 	@PhoneNumber char(50),
 	@Street char(255),
@@ -401,9 +408,9 @@ end
 
 --i) dodaje uczestnika do konferencji do konkretnej rezerwacji dnia + informacja czy jest studentem
 
-drop procedure PROC_addConferenceDayParticipant
+drop procedure addConferenceDayParticipant
 
-create procedure [PROC_addConferenceDayParticipant]
+create procedure AddConferenceDayParticipant
 	@PersonID int,
 	@ConferenceDayReservationID int,
 	@StudentCard int
@@ -488,9 +495,9 @@ end
 
 --j) dodaje uczestnika (który jest ju¿ ConferenceParticipant i ConferenceDayParticipant) na rezerwacjê warsztatu (sprawdza czy nie bêdzie na dwóch jednoczeœnie)
 
-drop procedure PROC_addWorkShopParticipant
+drop procedure addWorkShopParticipant
 
-create procedure [PROC_addWorkShopParticipant]
+create procedure AddWorkShopParticipant
 	@ConferenceParticipantID int,
 	@WorkShopReservationID int
 as
@@ -543,7 +550,9 @@ end
 --INNE
 
 --a) p³aci za rezerwacjê
-create procedure [FUNC_PayForReservation]
+drop procedure PROC_PayForReservation
+
+create procedure PayForReservation
 	@ReservationID int,
 	@PaymentDate date
 as
@@ -556,13 +565,123 @@ end
 --USUWANIE
 
 --a) usuwa rezerwacjê
+--create procedure [FUNC_deleteReservation]
 
---b) usuwa rezerwacjê na dzieñ
+--b) usuwa rezerwacjê na dzieñ TO DO
+create procedure [FUNC_deleteConferenceDayReservation]
+	@DayReservationID int
+as 
+begin
+	begin try
+		if not exists (select * from ConferenceDayReservation where ConferenceDayReservationID = @DayReservationID)
+			throw 50005,'No such WorkShopReservation',1
+
+		--exec [FUNC_deleteWorkShopReservation] (select WorkShopReservationID from WorkShopReservation where ReservationDayID = @DayReservationID)
+
+		delete from ConferenceDayReservation
+		where ConferenceDayReservationID = @DayReservationID
+	end try
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt delete this ConferenceDayReservation:' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+end
 
 --c) usuwa rezerwacjê na warsztat
 
+create procedure [FUNC_deleteWorkShopReservation]
+	@WorkShopReservationID int
+as
+begin
+	begin try
+		if not exists (select * from WorkShopReservation where WorkShopReservationID = @WorkShopReservationID)
+			throw 50005,'No such WorkShopReservation',1
+
+		delete from WorkShopParticipant
+		where WorkShopReservationID = @WorkShopReservationID
+
+		delete from WorkShopReservation
+		where WorkShopReservationID = @WorkShopReservationID
+
+	end try
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt delete this WorkShopReservation: ' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+end
+
+
 --d) usuwa uczestnika z warsztatu
 
---e) usuwa uczestnika z dnia
+create procedure [PROC_deleteWorkShopParticipant]
+	@ConferenceParticipantID int,
+	@WorkShopReservationID int
+as
+begin
+	begin try
+		if not exists (select * from WorkShopReservation where WorkShopReservationID = @WorkShopReservationID)
+			throw 50005,'No such WorkShopReservation',1
 
-select * from Customers
+		if not exists (select * from ConferenceParticipant where ConferenceParticipantID = @ConferenceParticipantID)
+			throw 50005,'No such ConferenceParticipant',1
+
+		delete from WorkShopParticipant
+		where ConferenceParticipantID = @ConferenceParticipantID
+		and WorkShopReservationID = @WorkShopReservationID
+
+		if exists (select * from Student where ConferenceParticipantID = @ConferenceParticipantID)
+			begin;
+			update WorkShopReservation
+			set StudentTickets = StudentTickets - 1
+			where WorkShopReservationID = @WorkShopReservationID
+			end
+		else
+			begin;
+			update WorkShopReservation
+			set NormalTickets = NormalTickets - 1
+			where WorkShopReservationID = @WorkShopReservationID
+			end
+
+	end try
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt delete this WorkShopParticipant: ' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+end
+
+--e) usuwa uczestnika z rezerwacji dnia TO DO
+create procedure [PROC_deleteConferenceDayParticipant]
+	@ConferenceDayReservationID int,
+	@ConferenceParticipantID int
+as
+begin
+	begin try
+		
+		declare @WorkShopReservationID int
+
+		declare the_cursor cursor fast_forward
+		for  (select WorkShopReservationID from WorkShopReservation wsr
+			join ConferenceDayReservation cdr on cdr.ConferenceDayReservationID = wsr.ReservationDayID
+			and cdr.ConferenceDayReservationID = @ConferenceDayReservationID)
+
+		open the_cursor
+		fetch next from the_cursor into @WorkShopReservationID
+
+		while @@FETCH_STATUS = 0
+		begin
+			exec PROC_deleteWorkShopParticipant @ConferenceParticipantID , @WorkShopReservationID
+			fetch next from the_cursor into @oneid
+		end
+
+		close the_cursor
+		deallocate the_cursor
+
+		delete from ConferenceDayParticipant
+		where ConferenceParticipantID = @ConferenceParticipantID and ConferenceDayReservationID = @ConferenceDayReservationID
+	end try
+	begin catch
+		declare @message nvarchar(3000) = 'Couldnt delete this WorkShopParticipant: ' + ERROR_MESSAGE();
+		throw 60000,@message,1;
+	end catch
+end
+
