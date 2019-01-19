@@ -444,9 +444,9 @@ begin
 	end catch
 end
 
---j) dodaje uczestnika na rezerwacjê warsztatu (sprawdza czy nie bêdzie na dwóch jednoczeœnie) - TO DO
+--j) dodaje uczestnika na rezerwacjê warsztatu (sprawdza czy nie bêdzie na dwóch jednoczeœnie)
 
- create procedure [PROC_addWorkShopParticipant]
+create procedure [PROC_addWorkShopParticipant]
 	@ConferenceParticipantID int,
 	@WorkShopReservationID int
 as
@@ -462,8 +462,15 @@ begin
 			throw 50005,'No such Person => cannot add day',1
 		end
 
-		if ((select COUNT(ConferenceParticipantID) from WorkShopParticipant
-		where ConferenceParticipantID = @ConferenceParticipantID and db )) 
+		declare @WorkShopID int = (select WorkShopID from WorkShopReservation where WorkShopReservationID = @WorkShopReservationID)
+
+		if ((select COUNT(ConferenceParticipantID) from WorkShopParticipant wsp
+		join WorkShopReservation wsr on wsr.WorkShopReservationID = wsp.WorkShopReservationID
+		where ConferenceParticipantID = @ConferenceParticipantID 
+		and dbo.FUNC_AreTheseWorkShopsAtTheSameTime(@WorkShopID, wsr.WorkShopID) = 0) > 0)
+		begin;
+			throw 50005,'No such Person => cannot add day',1
+		end
 
 		insert WorkShopParticipant(
 		ConferenceParticipantID,
@@ -492,4 +499,17 @@ begin
 	set PaymentDate = @PaymentDate
 	where ReservationID = @ReservationID
 end
---b) usuwa rezerwacjê jeœli nie op³acona na tydzieñ przed konferencj¹
+
+--USUWANIE
+
+--a) usuwa rezerwacjê
+
+--b) usuwa rezerwacjê na dzieñ
+
+--c) usuwa rezerwacjê na warsztat
+
+--d) usuwa uczestnika z warsztatu
+
+--e) usuwa uczestnika z dnia
+
+
