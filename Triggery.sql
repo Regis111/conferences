@@ -13,4 +13,3 @@
 
 --Blokuje dodawanie dnia konferencji je¿eli wykracza poza czas trwania konferencji
 
---
