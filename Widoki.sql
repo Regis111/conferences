@@ -44,7 +44,27 @@ where (w.SeatsLimit - w.ReservedSeats) > 0
 
 --1f) rezerwacje które maj¹ byæ op³acone do jutra
 
+create view [ReservationsGettingCanceledTommorrow] as
+select * from Reservations r
+join Conferences c on c.ConferenceID = r.ConferenceID
+where DATEDIFF(dd,GETDATE(), c.StartDate) = 8
+
 --1g) iloœæ rezerwacji na konferencje
 
---1h) 
+create view [NumberOfReservationsOnConference] as
+select c.ConferenceID, count(r.ReservationID) as [liczba rezerwacji] from Conferences c
+join Reservations r on r.ConferenceID = c.ConferenceID
+group by c.ConferenceID
+
+--1h)  konferencje z iloœci¹ zarezerwowanych miejsc na ka¿dy
+
+create view [NumberOfReservedSeatsForConference] as
+select c.ConferenceID,(select COUNT(cdp.ConferenceParticipantID)) from Conferences c
+join ConferenceDays cd on c.ConferenceID = cd.ConferenceID
+join ConferenceDayReservation cdr on cdr.ConferenceDayID = cd.ConferenceDayID
+join ConferenceDayParticipant cdp on cdp.ConferenceDayReservationID = cdr.ConferenceDayReservationID
+group by c.ConferenceID
+
+--1i) 20 najpopularniejszych warsztatów
+
 
