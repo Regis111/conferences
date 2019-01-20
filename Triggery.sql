@@ -14,6 +14,9 @@
 
 --Usuwanie wszystkich rezerwacji dni po usuniêciu danej rezerwacji
 
+--Usuwanie wszystkich ConferenceDayParticipant po usuniêciu danej rezerwacji dnia
+
+--Usuwanie wszystkich WorkShopParticipant po usuniêciu ConferenceDayParticipant
+
 --Usuwanie wszystkich rezerwacji warsztatów po usuniêciu danej rezerwacji dnia
 
---Usuwanie cz³onków Warsztatu po usuniêciu rezerwacji warsztatu
