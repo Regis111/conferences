@@ -1,22 +1,198 @@
 --TRIGGERY
 
---Blokuje rezerwacjê na dzieñ konferencji, je¿eli nie ma miejsc
+--1)Blokuje rezerwacjÄ™ na dzieÅ„ konferencji, jeÅ¼eli nie ma miejsc
+CREATE TRIGGER [TRIG_NoFreePlacesForConferentionDay]
+ ON ConferenceDayReservation
+ AFTER INSERT
+ AS
+ BEGIN
+ IF EXISTS
+ (
+ SELECT * FROM inserted AS i
+ WHERE ( dbo.FUNC_PaidReservations(i.ConferenceDayReservationID )+dbo.FUNC_UnpaidReservations(i.ConferenceDayReservationID)>=
+ dbo.func_ConferenceDaySeatsLimit(i.ConferenceDayID)
+ )
+ )
+ BEGIN
+ ; THROW 50001 , 'No places left.' ,1
+ END
+ END
+ GO
 
---Blokuje rezerwacjê na warsztat, je¿eli nie ma miejsc
+--2)Blokuje rezerwacjÄ™ na warsztat, jeÅ¼eli nie ma miejsc
+CREATE TRIGGER [TRIG_NoFreePlacesForWorkshop]
+ ON Workshop
+ AFTER INSERT
+ AS
+ BEGIN
+ IF EXISTS
+ (
+ SELECT * FROM inserted AS i
+ WHERE ( dbo.FUNC_WorkshopBookedSeats(i.WorkShopID)>=dbo.func_WorkshopSeatsLimit(i.WorkShopID)
+ )
+ )
+ BEGIN
+ ; THROW 50001 , 'No places left.' ,1
+ END
+ END
+ GO
 
---Usuwa rezerwacjê wraz z wszystkimi jej cz³onkami gdy nie zostanie uiszczona wp³ata tydzieñ przed konferencjê
+--3)Usuwa rezerwacjÄ™ wraz z wszystkimi jej czÅ‚onkami gdy nie zostanie uiszczona wpÅ‚ata tydzieÅ„ przed konferencjÄ™
 
---Blokuje mo¿liwoœæ rezerwowania je¿eli jest mniej ni¿ tydzieñ do rezerwacji
 
---Blokuje dodawanie dnia konferencji je¿eli wykracza poza czas trwania konferencji
+--4)Blokuje moÅ¼liwoÅ›Ä‡ rezerwowania jeÅ¼eli jest mniej niÅ¼ tydzieÅ„ do rezerwacji ok
+	CREATE TRIGGER [TRIG_7DaysTillConferenceCheck]
+	 ON Reservations
+	AFTER INSERT
+	AS
+	BEGIN
+	 IF EXISTS
+	 (
+	 SELECT * FROM inserted AS i
+	 join Conferences as c
+	 on c.ConferenceID=i.ConferenceID
+	 where DATEDIFF(day,getdate(),c.StartDate)<7
+	 )
+	 BEGIN
+	 ; THROW 50001 , 'Too late!!!' ,1
+	 END
+	 END
+	 GO
 
---Pilnuje, czy po zmianie iloœci zarezerwowanych miejsc na dany dzieñ zmieniona iloœæ obejmuje wszystkie zapisane osoby
+--5)Blokuje dodawanie dnia konferencji jeÅ¼eli wykracza poza czas trwania konferencji ok
+CREATE TRIGGER [TRIG_DaysAfterConferenceBlock]
+	 ON ConferenceDays
+	AFTER INSERT
+	AS
+	BEGIN
+	 IF EXISTS
+	 (
+	 SELECT * FROM inserted AS i
+	 join Conferences as c
+	 on c.ConferenceID=i.ConferenceID
+	 where DATEADD(day,i.DayNumber-1,c.StartDate)>c.EndDate
+	 )
+	 BEGIN
+	 ; THROW 50001 , 'That day is not in the bounds of conference' ,1
+	 END
+	 END
+	 GO
 
---Usuwanie wszystkich rezerwacji dni po usuniêciu danej rezerwacji
+--6)Pilnuje, czy po zmianie iloÅ›ci zarezerwowanych miejsc na dany dzieÅ„ zmieniona iloÅ›Ä‡ obejmuje wszystkie zapisane osoby 
 
---Usuwanie wszystkich ConferenceDayParticipant po usuniêciu danej rezerwacji dnia
 
---Usuwanie wszystkich WorkShopParticipant po usuniêciu ConferenceDayParticipant
+--7)Usuwanie wszystkich rezerwacji dni po usuniÄ™ciu danej rezerwacji ok
 
---Usuwanie wszystkich rezerwacji warsztatów po usuniêciu danej rezerwacji dnia
 
+--8)Usuwanie wszystkich ConferenceDayParticipant po usuniÄ™ciu danej rezerwacji dnia ok
+
+
+--9)Usuwanie wszystkich WorkShopParticipant po usuniÄ™ciu ConferenceDayParticipant ok
+
+
+--10)Usuwanie wszystkich rezerwacji warsztatÃ³w po usuniÄ™ciu danej rezerwacji dnia ok
+
+
+--11)Sprawdzanie czy limit miejsc warsztatÃ³w jest wiÄ™kszy od limitu dnia konferencji (nie moÅ¼e byÄ‡)
+	CREATE TRIGGER [TRIG_ConferenceLimitVsWorkshopLimit]
+	 ON ConferenceDays
+	AFTER INSERT, UPDATE
+	AS
+	BEGIN
+	 IF EXISTS
+	 (
+	 SELECT * FROM inserted AS i
+	 join WorkShop as w on w.ConferenceDayID=i.ConferenceDayID
+	 where i.SeatsLimit<w.SeatsLimit
+	 )
+	 BEGIN
+	 ; THROW 50001 , 'Workshop cannot have highter limit than conference' ,1
+	 END
+	 END
+	 GO
+
+--12) Sprawdzanie czy iloÅ›Ä‡ rezerwacji na warsztat nie jest wiÄ™ksza od iloÅ›ci rezerwacji na konferencjÄ™
+CREATE TRIGGER [TRIG_ConferenceReservVsWorkshopReserv]
+	 ON ConferenceDays
+	AFTER INSERT, UPDATE
+	AS
+	BEGIN
+	 IF EXISTS
+	 (
+	 SELECT * FROM inserted AS i
+	 join WorkShop as w on w.ConferenceDayID=i.ConferenceDayID
+	 where dbo.FUNC_WorkshopBookedSeats(w.WorkShopID)>dbo.FUNC_PaidReservations(i.ConferenceDayID )+dbo.FUNC_UnpaidReservations(i.ConferenceDayID)
+	 )
+	 BEGIN
+	 ; THROW 50001 , 'Workshop cannot have more reservations than conference' ,1
+	 END
+	 END
+	 GO
+
+--13) Sprawdzenie przekroczenia 7 dni na zapÅ‚atÄ™
+CREATE TRIGGER [TRIG_7DaysDelayCheck]
+	 ON Reservations
+	AFTER INSERT, UPDATE
+	AS
+	BEGIN
+	 IF EXISTS
+	 (
+	 SELECT * FROM inserted AS i
+	 where DATEDIFF(day,i.ReservationDate,getdate())>7
+	 )
+	 BEGIN
+	 ; THROW 50001 , 'Too late!!!' ,1
+	 END
+	 END
+	 GO
+
+--14) Sprawdzanie czy data rozpoczÄ™cia konferencji jest przed datÄ… zakoÅ„czenia konferencji
+CREATE TRIGGER [TRIG_ConferenceDatesCheck]
+	 ON Conferences
+	AFTER INSERT
+	AS
+	BEGIN
+	 IF EXISTS
+	 (
+	 SELECT * FROM inserted AS i
+	 where DATEDIFF(day,i.StartDate,i.EndDate)<0
+	 )
+	 BEGIN
+	 ; THROW 50001 , 'Start date should be before End date!' ,1
+	 END
+	 END
+	 GO
+
+--15)Sprawdzanie czy data rozpoczÄ™cia warsztatu jest przed datÄ… zakoÅ„czenia warsztatu
+CREATE TRIGGER [TRIG_WorkshopTimeCheck]
+	 ON WorkShop
+	AFTER INSERT
+	AS
+	BEGIN
+	 IF EXISTS
+	 (
+	 SELECT * FROM inserted AS i
+	 where DATEDIFF(hour,i.StartTime,i.EndTime)<0
+	 )
+	 BEGIN
+	 ; THROW 50001 , 'Start time should be before End time!' ,1
+	 END
+	 END
+	 GO
+
+--16) Sprawdzanie czy data rozpoczÄ™cia konferencji jest w przyszÅ‚oÅ›ci
+CREATE TRIGGER [TRIG_IsStartDateInFuture]
+	 ON Conferences
+	AFTER INSERT
+	AS
+	BEGIN
+	 IF EXISTS
+	 (
+	 SELECT * FROM inserted AS i
+	 where DATEDIFF(day,getdate(),i.StartDate)<0
+	 )
+	 BEGIN
+	 ; THROW 50001 , 'Not in future!' ,1
+	 END
+	 END
+	 GO
