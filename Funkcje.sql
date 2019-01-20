@@ -99,7 +99,29 @@ begin
 end
 
 --5) koszt konkretnej rezerwacji (na podstawie paymentDate) (wzór do wyznaczania ustalamy na (1-x)*price) price-koszt bez ustalania daty p³atnoœci, x - liczba dni od konferencji/100
+create function [FUNC_ReservationCost] (@ReservationID int)
+returns money
+as
+begin
+	if not exists (select * from Reservations where ReservationID = @ReservationID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	Declare @PaymentDate datetime = (select PaymentDate from Reservations where ReservationID = @ReservationID)
+	declare @ConferenceStart datetime=( select StartDate from Conferences as c
+	 join Reservations as r on r.ConferenceID=c.ConferenceID
+	 where ReservationID = @ReservationID )
+	declare @DiscountPercent float = convert(float,datediff(day,@PaymentDate,@ConferenceStart))/100
+	DECLARE @reservationCost MONEY =
+	(Select Sum(cd.NormalTickets) *(1-@DiscountPercent) +
+	Sum(cd.StudentTickets)*0.5*(1-@DiscountPercent)
+	From ConferenceDayReservation as cd
+	join Reservations as r
+	on r.ReservationID = cd.ReservationID
+	WHERE r.ReservationID = @reservationID and r.PaymentDate is not null)
 
+	return isnull(@reservationCost,0)
+end
 --6) lista dni konkretnej konferencji
 create function [FUNC_DaysOfConference] (@ConferenceID int)
 	returns table
@@ -207,7 +229,7 @@ if not exists (select * from Conferences where ConferenceID = @ConferenceID)
 	from ConferenceDays as cd
 	join Conferences as co
 	on co.ConferenceID = cd.ConferenceID
-	where (DATEDIFF(dd, @ConferenceID, co.StartDate) =cd.DayNumber
+	where (DATEDIFF(dd, co.StartDate, @ConferenceID) =cd.DayNumber
 
 	))
 end
@@ -249,9 +271,9 @@ if not exists (select * from WorkShop where WorkShopID = @WorkshopID)
 	)
 end
 
---16)ilość wolnych miejsc na warsztat
-create function [FUNC_WorkshopFreeSeats] (@WorkshopID int)
-	returns int
+--16)zwraca Nazwe warsztatu
+create function [FUNC_WorkshopName] (@WorkshopID int)
+	returns char
 as
 begin
 if not exists (select * from WorkShop where WorkShopID = @WorkshopID)
@@ -260,47 +282,62 @@ if not exists (select * from WorkShop where WorkShopID = @WorkshopID)
 	end
 	
 	RETURN (
-	select SeatsLimit - dbo.FUNC_WorkshopBookedSeats(@WorkshopID)
-	from WorkShop
+	select WorkShopName from WorkShop
+	where WorkShopID=@WorkshopID
 	)
 end
---17)ilość opłaconych miejsc na konferencję
-create function [FUNC_PaidReservations] (@ConferenceID int)
+--17)ilość opłaconych miejsc na konkretny dzień konferencji
+create function [FUNC_PaidReservations] (@ConferenceDayID int)
 	returns int
 as
 begin
-if not exists (select * from Conferences where ConferenceID = @ConferenceID)
+if not exists (select * from Conferences where ConferenceID = @ConferenceDayID)
 	begin;
 		return cast('Error happened here.' as int);
 	end
 	
 	RETURN (
-	select count(r.ConferenceID) 
+	select count(c.ConferenceDayID) 
 	from Reservations as r
-	join Conferences as c
-	on c.ConferenceID=r.ConferenceID
-	where r.PaymentDate is not null and c.ConferenceID = @ConferenceID
+	join ConferenceDayReservation as c
+	on c.ReservationID=r.ReservationID
+	where r.PaymentDate is not null and c.ConferenceDayID = @ConferenceDayID
 
 	)
 end
 
---18)ilość zarezerwowanych miejsc na konferencję (nieopłaconych)
-create function [FUNC_UnpaidReservations] (@ConferenceID int)
+--18)ilość zarezerwowanych miejsc na konkretny dzień konferencji (nieopłaconych)
+create function [FUNC_UnpaidReservations] (@ConferenceDayID int)
 	returns int
 as
 begin
-if not exists (select * from Conferences where ConferenceID = @ConferenceID)
+if not exists (select * from Conferences where ConferenceID = @ConferenceDayID)
 	begin;
 		return cast('Error happened here.' as int);
 	end
 	
 	RETURN (
-	select count(r.ConferenceID) 
+	select count(c.ConferenceDayID) 
 	from Reservations as r
-	join Conferences as c
-	on c.ConferenceID=r.ConferenceID
-	where r.PaymentDate is null and c.ConferenceID = @ConferenceID
+	join ConferenceDayReservation as c
+	on c.ReservationID=r.ReservationID
+	where r.PaymentDate is null and c.ConferenceDayID = @ConferenceDayID
 
 	)
 end
 
+--19) Zwraca Limit miejsc na dzień konferencji
+create function [FUNC_ConferenceDaySeatsLimit] (@ConferenceDayID int)
+	returns int
+as
+begin
+if not exists (select * from ConferenceDays where ConferenceDayID = @ConferenceDayID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select SeatsLimit from ConferenceDays
+	where ConferenceDayID=@ConferenceDayID
+	)
+end
