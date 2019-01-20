@@ -1,7 +1,29 @@
 --Funkcje
 
 --1)zarobek za jedn¹ konferencjê z samych warsztatów
- 
+ create function [FUNC_WorkshopIncomeFromOneConference] (@ConferenceID int)
+	returns money
+as
+begin
+
+if not exists (select * from Conferences where ConferenceID = @ConferenceID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN ISNULL((SELECT SUM(wr.NormalTickets*ws.price) + SUM(wr.StudentTickets*ws.price*0.5)
+	
+FROM WorkShopReservation as wr
+join WorkShop as ws
+on ws.WorkShopID=wr.WorkShopID
+join ConferenceDays as cd
+on cd.ConferenceDayID = ws.ConferenceDayID
+join Conferences as co
+on co.ConferenceID = cd.ConferenceID
+Where co.ConferenceID = @ConferenceID),
+0)
+end
+
 --2)  iloœæ wolnych miejsc na konkretny dzieñ (suma wolnych miejsc na wszystkich warsztatach na ten dzieñ)
 
 create function [FUNC_NumberOfAvailableSeatsOnDay] (@DayID int)
@@ -138,6 +160,147 @@ as
 	join WorkShop ws on ws.WorkShopID = wsr.WorkShopID)
 
 --11)Cena noemalnego biletu dla danego warsztatu
+create function [FUNC_NormalTicketPrice] (@WorkshopID int)
+	returns money
+as
+begin
+if not exists (select * from WorkShop where WorkShopID = @WorkshopID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select price from WorkShop
+	where WorkShopID=@WorkshopID
+	)
+end
+
+
 --12)Cena studenckiego biletu dla danego warsztatu (przelicznik 0,5*cena normalna)
+create function [FUNC_StudentTicketPrice] (@WorkshopID int)
+	returns money
+as
+begin
+if not exists (select * from WorkShop where WorkShopID = @WorkshopID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select (0.5*price)
+	 from WorkShop
+	where WorkShopID=@WorkshopID
+	)
+end
 --13)ID dnia konferencji na podstawie daty i conferenceID
+create function [FUNC_ConferenceDayBasedOnDate] (@ConferenceID int,@date date)
+	returns money
+as
+begin
+if not exists (select * from Conferences where ConferenceID = @ConferenceID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select cd.ConferenceID 
+	from ConferenceDays as cd
+	join Conferences as co
+	on co.ConferenceID = cd.ConferenceID
+	where (DATEDIFF(dd, @ConferenceID, co.StartDate) =cd.DayNumber
+
+	))
+end
+
+--14)Limit miejsc Workshopu
+create function [FUNC_WorkshopSeatsLimit] (@WorkshopID int)
+	returns int
+as
+begin
+if not exists (select * from WorkShop where WorkShopID = @WorkshopID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select SeatsLimit from WorkShop
+	where WorkShopID=@WorkshopID
+	)
+end
+
+
+--15)ilość zarezerwowanych miejsc na warsztat
+
+create function [FUNC_WorkshopBookedSeats] (@WorkshopID int)
+	returns int
+as
+begin
+if not exists (select * from WorkShop where WorkShopID = @WorkshopID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select sum(wr.NormalTickets)+sum(wr.StudentTickets) 
+	from WorkShop as ws 
+	join WorkShopReservation as wr
+	on wr.WorkShopID=ws.WorkShopID
+	where ws.WorkShopID=@WorkshopID
+	)
+end
+
+--16)ilość wolnych miejsc na warsztat
+create function [FUNC_WorkshopFreeSeats] (@WorkshopID int)
+	returns int
+as
+begin
+if not exists (select * from WorkShop where WorkShopID = @WorkshopID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select SeatsLimit - dbo.FUNC_WorkshopBookedSeats(@WorkshopID)
+	from WorkShop
+	)
+end
+--17)ilość opłaconych miejsc na konferencję
+create function [FUNC_PaidReservations] (@ConferenceID int)
+	returns int
+as
+begin
+if not exists (select * from Conferences where ConferenceID = @ConferenceID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select count(r.ConferenceID) 
+	from Reservations as r
+	join Conferences as c
+	on c.ConferenceID=r.ConferenceID
+	where r.PaymentDate is not null and c.ConferenceID = @ConferenceID
+
+	)
+end
+
+--18)ilość zarezerwowanych miejsc na konferencję (nieopłaconych)
+create function [FUNC_UnpaidReservations] (@ConferenceID int)
+	returns int
+as
+begin
+if not exists (select * from Conferences where ConferenceID = @ConferenceID)
+	begin;
+		return cast('Error happened here.' as int);
+	end
+	
+	RETURN (
+	select count(r.ConferenceID) 
+	from Reservations as r
+	join Conferences as c
+	on c.ConferenceID=r.ConferenceID
+	where r.PaymentDate is null and c.ConferenceID = @ConferenceID
+
+	)
+end
 
