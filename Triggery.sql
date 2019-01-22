@@ -82,13 +82,68 @@ CREATE TRIGGER [TRIG_DaysAfterConferenceBlock]
 
 
 --7)Usuwanie wszystkich rezerwacji dni po usunięciu danej rezerwacji ok
+CREATE TRIGGER [TRIG_DeleteReservationDaysAfterDeletingReservation]
+ ON Reservations
+ AFTER DELETE
+ AS
+ BEGIN
+ SET NOCOUNT ON;
+ DELETE FROM ConferenceDayReservation
+ WHERE ReservationID IN
+ (
+ SELECT rw.ReservationID
+ FROM deleted AS d
+ JOIN ConferenceDayReservation AS rw
+ ON rw.ReservationID = d.ReservationID
+ )
+ END
+ GO
 
 
 --8)Usuwanie wszystkich ConferenceDayParticipant po usunięciu danej rezerwacji dnia ok
+ CREATE TRIGGER [TRIG_DeleteConferenceDayParticipantAfterDeletingReservationDay]
+ ON ConferenceDayReservation
+ AFTER DELETE
+ AS
+ BEGIN
+ SET NOCOUNT ON;
+ DELETE FROM ConferenceDayParticipant
+ WHERE ConferenceDayReservationID IN
+ (
+ SELECT rw.ConferenceDayReservationID
+ FROM deleted AS d
+ JOIN ConferenceDayParticipant AS rw
+ ON rw.ConferenceDayReservationID = d.ConferenceDayReservationID
+ )
+ END
+ GO
 
 
 --9)Usuwanie wszystkich WorkShopParticipant po usunięciu ConferenceDayParticipant ok
-
+ CREATE TRIGGER [TRIG_DeleteWorkShopParticipantsAfterDeletingConferenceDayParticipant]
+ ON ConferenceDayParticipant
+ AFTER DELETE
+ AS
+ BEGIN
+ SET NOCOUNT ON;
+ DELETE FROM WorkShopParticipant
+ WHERE ConferenceParticipantID IN
+ (
+ SELECT d.ConferenceParticipantID
+ FROM deleted AS d
+ join ConferenceDayReservation as cdr
+ on d.ConferenceDayReservationID = cdr.ConferenceDayReservationID
+ join ConferenceDays as cd
+ on cd.ConferenceDayID=cdr.ConferenceDayID
+ join WorkShop as ws 
+ on ws.ConferenceDayID=cd.ConferenceDayID
+ join WorkShopReservation as wsr
+ on wsr.WorkShopID=ws.WorkShopID
+ join WorkShopParticipant as wsp
+ on wsp.WorkShopReservationID=wsr.WorkShopReservationID
+ )
+ END
+ GO
 
 --10)Usuwanie wszystkich rezerwacji warsztatów po usunięciu danej rezerwacji dnia ok
 
